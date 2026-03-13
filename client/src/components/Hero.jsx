@@ -28,7 +28,7 @@ export default function Hero() {
       <Box
         position="absolute"
         inset={0}
-        bgImage="url('https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1600&q=80')"
+        bgImage="url('https://images.unsplash.com/photo-1571748982800-fa51082c2224?w=1600&q=80')"
         bgSize="cover"
         bgPosition="center"
         bgRepeat="no-repeat"

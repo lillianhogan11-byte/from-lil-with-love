@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import MenuCard from './MenuCard';
 
-const CATEGORY_ORDER = ['Breads', 'Pastries', 'Cookies', 'Seasonal Specials', 'Coffee & Drinks'];
+const CATEGORY_ORDER = ['Biscuits', 'Biscuit Sandwiches', 'Biscuits & Spreads', 'Biscuits & Gravy', 'Coffee & Espresso'];
 
 export default function MenuSection() {
   const [menuData, setMenuData] = useState({});
