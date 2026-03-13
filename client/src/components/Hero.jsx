@@ -30,7 +30,7 @@ export default function Hero() {
         inset={0}
         bgImage="url('/hero-biscuits.jpg')"
         bgSize="cover"
-        bgPosition="center"
+        bgPosition="center 35%"
         bgRepeat="no-repeat"
         _after={{
           content: '""',
