@@ -244,6 +244,6 @@ app.get('*', (req, res) => {
 // Register portal routes
 registerPortalRoutes(app, db);
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`From Lil With Love server running on http://localhost:${PORT}`);
 });
