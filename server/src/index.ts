@@ -17,6 +17,7 @@ app.use(cors({
     'https://www.biscuitbar.cafe',
     'https://portal.biscuitbar.cafe',
     'https://api.biscuitbar.cafe',
+    'https://kiosk.biscuitbar.cafe',
   ],
   credentials: true,
 }));
@@ -215,6 +216,47 @@ app.post('/api/orders', (req: Request, res: Response) => {
   } catch {}
 
   res.status(201).json(order);
+});
+
+// POST /api/kiosk/orders — create kiosk order (no auth required)
+app.post('/api/kiosk/orders', (req: Request, res: Response) => {
+  const { customer_name, payment_type, items, subtotal, tax, total } = req.body as Record<string, any>;
+  if (!customer_name || !payment_type || !items || total == null) {
+    res.status(400).json({ error: 'customer_name, payment_type, items, and total are required' });
+    return;
+  }
+  const itemsJson = JSON.stringify(items);
+  const notes = `Kiosk order — payment: ${payment_type}`;
+  const stmt = db.prepare(
+    'INSERT INTO orders (customer_name, customer_phone, pickup_time, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)'
+  );
+  const result = stmt.run(customer_name, 'kiosk', 'Now', itemsJson, total, notes) as { lastInsertRowid: number };
+  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid) as any;
+  order.items = JSON.parse(order.items);
+
+  // Notify webhook (fire and forget)
+  try {
+    const item_count = Array.isArray(items) ? items.reduce((s: number, i: any) => s + (i.quantity || 1), 0) : 0;
+    const payLabel = payment_type === 'card' ? 'card (see cashier)' : 'cash';
+    const body = JSON.stringify({
+      agentId: 'main',
+      text: `🥐 Kiosk order from ${customer_name}! ${item_count} item${item_count !== 1 ? 's' : ''}, $${Number(total).toFixed(2)} — paying ${payLabel}.`,
+      mode: 'now',
+    });
+    const options: http.RequestOptions = {
+      hostname: 'localhost',
+      port: 18789,
+      path: '/api/notify',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    };
+    const req2 = http.request(options);
+    req2.on('error', () => {});
+    req2.write(body);
+    req2.end();
+  } catch {}
+
+  res.status(201).json({ id: order.id, total: order.total, customer_name: order.customer_name });
 });
 
 // GET /api/orders — all orders (admin)
