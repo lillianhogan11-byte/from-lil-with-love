@@ -21,8 +21,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Serve built client in production
-app.use(express.static(path.join(__dirname, '../client/dist')));
+// Static files now served by nginx — not needed here
 
 // --- Database setup (Node.js built-in SQLite) ---
 const db = new DatabaseSync(DB_PATH);
@@ -255,14 +254,6 @@ app.post('/api/orders', (req, res) => {
 app.get('/api/orders', (req, res) => {
   const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
   res.json(orders);
-});
-
-// Catch-all: serve React app
-app.get('*', (req, res) => {
-  const distIndex = path.join(__dirname, '../client/dist/index.html');
-  res.sendFile(distIndex, (err) => {
-    if (err) res.status(404).send('Not found');
-  });
 });
 
 // Register portal routes
