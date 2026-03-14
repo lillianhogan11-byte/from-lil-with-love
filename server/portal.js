@@ -260,4 +260,43 @@ module.exports = function registerPortalRoutes(app, db) {
     const r = db.prepare("INSERT INTO menu_items (name,category,description,price,image_url) VALUES (?,?,?,?,?)").run(name,category,description||'',price,image_url||'');
     res.status(201).json(db.prepare("SELECT * FROM menu_items WHERE id=?").get(r.lastInsertRowid));
   });
+
+  // ── POS Orders ────────────────────────────────────────
+  app.post('/api/pos/orders', authMiddleware, (req, res) => {
+    const { items, total, payment_type, customer_name } = req.body;
+    if (!items || total == null) {
+      return res.status(400).json({ error: 'items and total are required' });
+    }
+    const name = customer_name || 'Walk-in';
+    const notes = payment_type ? `POS - ${payment_type}` : 'POS';
+    const stmt = db.prepare(
+      'INSERT INTO orders (customer_name, customer_phone, pickup_time, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const result = stmt.run(name, 'Walk-in', 'Now', JSON.stringify(items), total, notes);
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
+    order.items = JSON.parse(order.items);
+
+    // Notify via OpenClaw (fire-and-forget)
+    try {
+      const http = require('http');
+      const item_count = Array.isArray(items) ? items.reduce((s, i) => s + (i.quantity || 1), 0) : 0;
+      const body = JSON.stringify({
+        agentId: 'main',
+        text: `🏪 POS order placed! ${item_count} item(s), $${Number(total).toFixed(2)}. Payment: ${payment_type || 'Unknown'}.`,
+        mode: 'now',
+      });
+      const req2 = http.request({
+        hostname: 'localhost',
+        port: 18789,
+        path: '/api/notify',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      });
+      req2.on('error', () => {});
+      req2.write(body);
+      req2.end();
+    } catch {}
+
+    res.status(201).json(order);
+  });
 };

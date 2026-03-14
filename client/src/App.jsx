@@ -10,6 +10,9 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Confirmation from './pages/Confirmation';
 
+// POS
+import POSSystem from './pos/POSSystem';
+
 // Portal
 import PortalRoute from './portal/PortalRoute';
 import Login from './portal/Login';
@@ -69,6 +72,9 @@ function App() {
       <Route path="/portal/suppliers" element={<P><Suppliers /></P>} />
       <Route path="/portal/menu" element={<P><MenuManager /></P>} />
       <Route path="/portal/taxes" element={<P><TaxExport /></P>} />
+
+      {/* POS */}
+      <Route path="/pos" element={<P><POSSystem /></P>} />
     </Routes>
   );
 }
