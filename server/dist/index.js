@@ -9,8 +9,10 @@ dotenv_1.default.config({ path: path_1.default.join(__dirname, '../.env') });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const node_sqlite_1 = require("node:sqlite");
-const http_1 = __importDefault(require("http"));
-const portal_1 = __importDefault(require("./portal"));
+const menu_1 = __importDefault(require("./routes/menu"));
+const orders_1 = __importDefault(require("./routes/orders"));
+const auth_1 = __importDefault(require("./routes/auth"));
+const portal_1 = __importDefault(require("./routes/portal"));
 const app = (0, express_1.default)();
 const PORT = 3001;
 const DB_PATH = '/home/lils-agent/.openclaw/workspace/luv.db';
@@ -60,6 +62,11 @@ db.exec(`
     created_at TEXT
   )
 `);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_menu_items_category ON menu_items(category)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_menu_items_available ON menu_items(available)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_allowed_users_email ON allowed_users(email)`);
 // Seed Lily as allowed user
 const userCount = db.prepare('SELECT COUNT(*) as cnt FROM allowed_users').get();
 if (userCount.cnt === 0) {
@@ -129,114 +136,9 @@ for (const [name, url] of imageUpdates) {
     updateStmt.run(url, name);
 }
 // --- Routes ---
-// GET /api/menu — all items grouped by category
-app.get('/api/menu', (req, res) => {
-    const items = db.prepare('SELECT * FROM menu_items WHERE available = 1 ORDER BY category, id').all();
-    const grouped = items.reduce((acc, item) => {
-        if (!acc[item.category])
-            acc[item.category] = [];
-        acc[item.category].push(item);
-        return acc;
-    }, {});
-    res.json(grouped);
-});
-// GET /api/menu/:category — items by category
-app.get('/api/menu/:category', (req, res) => {
-    const category = decodeURIComponent(req.params['category']);
-    const items = db.prepare('SELECT * FROM menu_items WHERE category = ? AND available = 1 ORDER BY id').all(category);
-    res.json(items);
-});
-// POST /api/menu — add item (admin)
-app.post('/api/menu', (req, res) => {
-    const { name, category, description, price, image_url } = req.body;
-    if (!name || !category || !price) {
-        res.status(400).json({ error: 'name, category, and price are required' });
-        return;
-    }
-    const stmt = db.prepare('INSERT INTO menu_items (name, category, description, price, image_url) VALUES (?, ?, ?, ?, ?)');
-    const result = stmt.run(name, category, description || '', price, image_url || '');
-    const item = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(result.lastInsertRowid);
-    res.status(201).json(item);
-});
-// POST /api/orders — create order
-app.post('/api/orders', (req, res) => {
-    const { customer_name, customer_phone, pickup_time, items, total, notes } = req.body;
-    if (!customer_name || !customer_phone || !pickup_time || !items || total == null) {
-        res.status(400).json({ error: 'customer_name, customer_phone, pickup_time, items, and total are required' });
-        return;
-    }
-    const itemsJson = JSON.stringify(items);
-    const stmt = db.prepare('INSERT INTO orders (customer_name, customer_phone, pickup_time, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)');
-    const result = stmt.run(customer_name, customer_phone, pickup_time, itemsJson, total, notes || null);
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
-    order.items = JSON.parse(order.items);
-    // Notify webhook (fire and forget)
-    try {
-        const item_count = Array.isArray(items) ? items.reduce((s, i) => s + (i.quantity || 1), 0) : 0;
-        const body = JSON.stringify({
-            agentId: 'main',
-            text: `🥐 New pickup order from ${customer_name}! ${item_count} items, $${Number(total).toFixed(2)}. Pickup at ${pickup_time}. Phone: ${customer_phone}`,
-            mode: 'now',
-        });
-        const options = {
-            hostname: 'localhost',
-            port: 18789,
-            path: '/api/notify',
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-        };
-        const req2 = http_1.default.request(options);
-        req2.on('error', () => { });
-        req2.write(body);
-        req2.end();
-    }
-    catch { }
-    res.status(201).json(order);
-});
-// POST /api/kiosk/orders — create kiosk order (no auth required)
-app.post('/api/kiosk/orders', (req, res) => {
-    const { customer_name, payment_type, items, subtotal, tax, total } = req.body;
-    if (!customer_name || !payment_type || !items || total == null) {
-        res.status(400).json({ error: 'customer_name, payment_type, items, and total are required' });
-        return;
-    }
-    const itemsJson = JSON.stringify(items);
-    const notes = `Kiosk order — payment: ${payment_type}`;
-    const stmt = db.prepare('INSERT INTO orders (customer_name, customer_phone, pickup_time, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)');
-    const result = stmt.run(customer_name, 'kiosk', 'Now', itemsJson, total, notes);
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
-    order.items = JSON.parse(order.items);
-    // Notify webhook (fire and forget)
-    try {
-        const item_count = Array.isArray(items) ? items.reduce((s, i) => s + (i.quantity || 1), 0) : 0;
-        const payLabel = payment_type === 'card' ? 'card (see cashier)' : 'cash';
-        const body = JSON.stringify({
-            agentId: 'main',
-            text: `🥐 Kiosk order from ${customer_name}! ${item_count} item${item_count !== 1 ? 's' : ''}, $${Number(total).toFixed(2)} — paying ${payLabel}.`,
-            mode: 'now',
-        });
-        const options = {
-            hostname: 'localhost',
-            port: 18789,
-            path: '/api/notify',
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-        };
-        const req2 = http_1.default.request(options);
-        req2.on('error', () => { });
-        req2.write(body);
-        req2.end();
-    }
-    catch { }
-    res.status(201).json({ id: order.id, total: order.total, customer_name: order.customer_name });
-});
-// GET /api/orders — all orders (admin)
-app.get('/api/orders', (req, res) => {
-    const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
-    orders.forEach(o => { o.items = JSON.parse(o.items); });
-    res.json(orders);
-});
-// Register portal routes
+(0, menu_1.default)(app, db);
+(0, orders_1.default)(app, db);
+(0, auth_1.default)(app, db);
 (0, portal_1.default)(app, db);
 app.listen(PORT, '127.0.0.1', () => {
     console.log(`From Lil With Love server running on http://localhost:${PORT}`);

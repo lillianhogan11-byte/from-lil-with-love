@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
-import KioskApp from './kiosk/KioskApp.jsx';
+
+const KioskApp = lazy(() => import('./kiosk/KioskApp.jsx'));
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <KioskApp />
+    <Suspense fallback={null}>
+      <KioskApp />
+    </Suspense>
   </React.StrictMode>
 );

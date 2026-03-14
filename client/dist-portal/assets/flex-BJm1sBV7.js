@@ -1,0 +1,1 @@
+import{g as c,j as p,h as d}from"./main-C18jbfFO.js";const j=c(function(s,e){const{direction:i,align:r,justify:t,wrap:a,basis:n,grow:l,shrink:o,...x}=s,f={display:"flex",flexDirection:i,alignItems:r,justifyContent:t,flexWrap:a,flexBasis:n,flexGrow:l,flexShrink:o};return p.jsx(d.div,{ref:e,__css:f,...x})});j.displayName="Flex";export{j as F};

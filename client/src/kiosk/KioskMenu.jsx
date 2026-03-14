@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-
-const API_BASE = typeof __API_BASE__ !== 'undefined' ? __API_BASE__ : '';
+import { apiFetch } from '../api.js';
 
 export default function KioskMenu({ cart, onAddToCart, onUpdateQuantity, onCheckout }) {
   const [menuData, setMenuData] = useState({});
@@ -10,8 +9,7 @@ export default function KioskMenu({ cart, onAddToCart, onUpdateQuantity, onCheck
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/menu`)
-      .then(r => r.json())
+    apiFetch('/api/menu')
       .then(data => {
         setMenuData(data);
         const cats = Object.keys(data);

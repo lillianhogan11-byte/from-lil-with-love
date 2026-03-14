@@ -28,7 +28,7 @@ export default function Hero() {
       <Box
         position="absolute"
         inset={0}
-        bgImage="url('/hero-biscuits.jpg')"
+        bgImage="url('/hero-biscuits.webp')"
         bgSize="cover"
         bgPosition="center 35%"
         bgRepeat="no-repeat"

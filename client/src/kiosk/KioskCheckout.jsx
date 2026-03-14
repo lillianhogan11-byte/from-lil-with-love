@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../api.js';
 
-const API_BASE = typeof __API_BASE__ !== 'undefined' ? __API_BASE__ : '';
 const TAX_RATE = 0.07;
 
 export default function KioskCheckout({ cart, onBack, onOrderPlaced }) {
@@ -22,9 +22,8 @@ export default function KioskCheckout({ cart, onBack, onOrderPlaced }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/kiosk/orders`, {
+      const result = await apiFetch('/api/kiosk/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer_name: name.trim(),
           payment_type: payment,
@@ -34,8 +33,6 @@ export default function KioskCheckout({ cart, onBack, onOrderPlaced }) {
           total: Math.round(total * 100) / 100,
         }),
       });
-      if (!res.ok) throw new Error('Order failed');
-      const result = await res.json();
       onOrderPlaced({ ...result, payment_type: payment });
     } catch (e) {
       setError('Something went wrong. Please try again or see the cashier.');
