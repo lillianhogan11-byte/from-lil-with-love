@@ -1,3 +1,5 @@
+import { API_BASE } from '../api';
+
 const KEY = 'flwl_token';
 export const getToken = () => localStorage.getItem(KEY);
 export const setToken = (t) => localStorage.setItem(KEY, t);
@@ -6,7 +8,7 @@ export const isLoggedIn = () => !!getToken();
 
 export async function portalFetch(path, options = {}) {
   const token = getToken();
-  const res = await fetch(path, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

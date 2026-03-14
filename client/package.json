@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:public": "vite build --config vite.public.config.js",
+    "build:portal": "vite build --config vite.portal.config.js",
+    "build:all": "npm run build:public && npm run build:portal"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

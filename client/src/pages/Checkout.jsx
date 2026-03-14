@@ -5,6 +5,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { apiFetch } from '../api';
 
 function generateTimeSlots() {
   const slots = [];
@@ -44,7 +45,7 @@ export default function Checkout() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/orders', {
+      const res = await apiFetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

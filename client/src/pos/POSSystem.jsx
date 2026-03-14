@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Flex, Text, Heading, Button, Grid, useToast } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { portalFetch } from '../portal/auth';
+import { apiFetch } from '../api';
 import POSItem from './POSItem';
 import POSCart from './POSCart';
 
@@ -30,7 +31,7 @@ export default function POSSystem() {
 
   // Fetch menu
   useEffect(() => {
-    fetch('/api/menu')
+    apiFetch('/api/menu')
       .then((r) => r.json())
       .then((data) => {
         setMenuData(data);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, VStack, Input, Button, Text, Heading, FormControl, FormLabel, Tabs, TabList, Tab, TabPanels, TabPanel } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { setToken } from './auth';
+import { apiFetch } from '../api';
 
 const inputStyle = { bg: '#1e1e1e', border: '1px solid', borderColor: '#333', borderRadius: '2px', color: 'white', fontFamily: "'Lato', sans-serif", _focus: { borderColor: '#C9A84C', boxShadow: 'none' }, _placeholder: { color: '#555' } };
 
@@ -15,7 +16,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const res = await fetch('/portal/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(loginForm) });
+      const res = await apiFetch('/portal/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(loginForm) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Login failed'); return; }
       setToken(data.token); navigate('/portal');
@@ -25,12 +26,15 @@ export default function Login() {
   const handleRegister = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const res = await fetch('/portal/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regForm) });
+      const res = await apiFetch('/portal/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regForm) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Registration failed'); return; }
       setToken(data.token); navigate('/portal');
     } catch { setError('Something went wrong.'); } finally { setLoading(false); }
   };
+
+  const params = new URLSearchParams(window.location.search);
+  const oauthError = params.get('error');
 
   return (
     <Box minH="100vh" bg="#111" display="flex" alignItems="center" justifyContent="center" p={4}>
@@ -41,6 +45,34 @@ export default function Login() {
         </VStack>
 
         <Box bg="#161616" borderRadius="4px" border="1px solid" borderColor="#222" p={8}>
+          <VStack spacing={4} mb={6}>
+            {oauthError && (
+              <Text color="red.400" fontSize="sm" fontFamily="'Lato', sans-serif">
+                {oauthError === 'unauthorized' ? 'Your account is not authorized.' : 'Sign-in failed. Please try again.'}
+              </Text>
+            )}
+            <Button
+              as="a"
+              href="https://api.biscuitbar.cafe/auth/google"
+              w="full"
+              bg="white"
+              color="#333"
+              fontFamily="'Lato', sans-serif"
+              fontWeight="600"
+              fontSize="sm"
+              py={6}
+              borderRadius="2px"
+              _hover={{ bg: '#f0f0f0' }}
+              leftIcon={<Text fontSize="lg">G</Text>}
+            >
+              Continue with Google
+            </Button>
+            <Box w="full" display="flex" alignItems="center" gap={3}>
+              <Box flex={1} h="1px" bg="#222" />
+              <Text fontSize="xs" color="#555" fontFamily="'Lato', sans-serif">or</Text>
+              <Box flex={1} h="1px" bg="#222" />
+            </Box>
+          </VStack>
           <Tabs variant="unstyled" colorScheme="yellow">
             <TabList mb={6} borderBottom="1px solid" borderColor="#222" pb={4}>
               {['Sign In', 'Create Account'].map(label => (

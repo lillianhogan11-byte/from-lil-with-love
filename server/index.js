@@ -1,3 +1,4 @@
+require("dotenv").config({ path: __dirname + "/.env" });
 const express = require('express');
 const cors = require('cors');
 const { DatabaseSync } = require('node:sqlite');
@@ -9,7 +10,15 @@ const app = express();
 const PORT = 3001;
 const DB_PATH = '/home/lils-agent/.openclaw/workspace/luv.db';
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://biscuitbar.cafe",
+    "https://www.biscuitbar.cafe",
+    "https://portal.biscuitbar.cafe",
+    "https://api.biscuitbar.cafe"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve built client in production
@@ -43,6 +52,21 @@ db.exec(`
     available INTEGER DEFAULT 1
   )
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS allowed_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    name TEXT,
+    created_at TEXT
+  )
+`);
+
+// Seed Lily as allowed user
+const userCount = db.prepare("SELECT COUNT(*) as cnt FROM allowed_users").get();
+if (userCount.cnt === 0) {
+  db.prepare("INSERT OR IGNORE INTO allowed_users (email, name) VALUES (?, ?)").run("lily@biscuitbar.cafe", "Lily");
+}
 
 // Seed if empty
 const count = db.prepare('SELECT COUNT(*) as cnt FROM menu_items').get();

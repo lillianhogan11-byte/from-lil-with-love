@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { google } = require('googleapis');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'flwl-portal-secret-2026';
-const JWT_EXPIRES = '7d';
+const JWT_EXPIRES = '30d';
 
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
@@ -16,6 +17,50 @@ function authMiddleware(req, res, next) {
 }
 
 module.exports = function registerPortalRoutes(app, db) {
+
+  // ── Google OAuth ───────────────────────────────────────
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+
+  app.get("/auth/google", (req, res) => {
+    const url = oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
+      prompt: "select_account"
+    });
+    res.redirect(url);
+  });
+
+  app.get("/auth/google/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      const { tokens } = await oauth2Client.getToken(code);
+      oauth2Client.setCredentials(tokens);
+
+      const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+      const { data } = await oauth2.userinfo.get();
+      const email = data.email;
+
+      const allowed = db.prepare("SELECT * FROM allowed_users WHERE email = ?").get(email);
+      if (!allowed) {
+        return res.redirect("https://portal.biscuitbar.cafe/login?error=unauthorized");
+      }
+
+      const token = jwt.sign(
+        { email, name: data.name, picture: data.picture, sub: data.sub },
+        process.env.JWT_SECRET || "changeme",
+        { expiresIn: "30d" }
+      );
+
+      res.redirect(`https://portal.biscuitbar.cafe/auth/callback#token=${token}`);
+    } catch (err) {
+      console.error("OAuth error:", err);
+      res.redirect("https://portal.biscuitbar.cafe/login?error=oauth_failed");
+    }
+  });
 
   // ── Auth ──────────────────────────────────────────────
   app.post('/portal/api/auth/register', async (req, res) => {

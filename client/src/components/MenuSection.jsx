@@ -13,6 +13,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import MenuCard from './MenuCard';
+import { apiFetch } from '../api';
 
 const CATEGORY_ORDER = ['Biscuits', 'Biscuit Sandwiches', 'Biscuits & Spreads', 'Biscuits & Gravy', 'Coffee & Espresso'];
 
@@ -23,7 +24,7 @@ export default function MenuSection() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/menu')
+    apiFetch('/api/menu')
       .then((r) => {
         if (!r.ok) throw new Error('Failed to load menu');
         return r.json();
