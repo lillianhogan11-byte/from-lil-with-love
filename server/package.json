@@ -2,10 +2,11 @@
   "name": "from-lil-with-love-server",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc",
+    "start": "node --experimental-sqlite dist/index.js",
+    "dev": "ts-node src/index.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -16,6 +17,13 @@
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.5.0",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
