@@ -1,8 +1,9 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(__dirname, '../.env') });
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { DatabaseSync } from 'node:sqlite';
-import path from 'path';
 import http from 'http';
 import registerPortalRoutes from './portal';
 
