@@ -1,23 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../api.js';
 
 export default function KioskMenu({ cart, onAddToCart, onUpdateQuantity, onCheckout }) {
-  const [menuData, setMenuData] = useState({});
-  const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
 
-  useEffect(() => {
-    apiFetch('/api/menu')
-      .then(data => {
-        setMenuData(data);
-        const cats = Object.keys(data);
-        setCategories(cats);
-        if (cats.length > 0) setActiveCategory(cats[0]);
-      })
-      .catch(() => {});
-  }, []);
+  const { data: menuData = {} } = useQuery({
+    queryKey: ['menu'],
+    queryFn: () => apiFetch('/api/menu'),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const categories = Object.keys(menuData);
+  const effectiveCategory = activeCategory || categories[0] || '';
 
   useEffect(() => {
     function update() {
@@ -32,7 +29,7 @@ export default function KioskMenu({ cart, onAddToCart, onUpdateQuantity, onCheck
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-  const activeItems = menuData[activeCategory] || [];
+  const activeItems = menuData[effectiveCategory] || [];
 
   function getQty(itemId) {
     const found = cart.find(i => i.id === itemId);
@@ -87,11 +84,11 @@ export default function KioskMenu({ cart, onAddToCart, onUpdateQuantity, onCheck
                 padding: '14px 20px',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: activeCategory === cat ? '3px solid #7C9A7E' : '3px solid transparent',
-                color: activeCategory === cat ? '#7C9A7E' : '#888',
+                borderBottom: effectiveCategory === cat ? '3px solid #7C9A7E' : '3px solid transparent',
+                color: effectiveCategory === cat ? '#7C9A7E' : '#888',
                 fontFamily: "'Lato', sans-serif",
                 fontSize: 15,
-                fontWeight: activeCategory === cat ? 700 : 400,
+                fontWeight: effectiveCategory === cat ? 700 : 400,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -12,32 +12,20 @@ import {
   Center,
   Badge,
 } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
 import MenuCard from './MenuCard';
 import { apiFetch } from '../api';
 
 const CATEGORY_ORDER = ['Biscuits', 'Biscuit Sandwiches', 'Biscuits & Spreads', 'Biscuits & Gravy', 'Coffee & Espresso'];
 
 export default function MenuSection() {
-  const [menuData, setMenuData] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    apiFetch('/api/menu')
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed to load menu');
-        return r.json();
-      })
-      .then((data) => {
-        setMenuData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { data: menuData = {}, isLoading, error } = useQuery({
+    queryKey: ['menu'],
+    queryFn: () => apiFetch('/api/menu'),
+    staleTime: 1000 * 60 * 10,
+  });
 
   const categories = ['All', ...CATEGORY_ORDER.filter((c) => menuData[c])];
 
@@ -83,7 +71,7 @@ export default function MenuSection() {
         </VStack>
 
         {/* Category filter */}
-        {!loading && !error && (
+        {!isLoading && !error && (
           <HStack
             spacing={2}
             mb={10}
@@ -123,7 +111,7 @@ export default function MenuSection() {
         )}
 
         {/* Loading */}
-        {loading && (
+        {isLoading && (
           <Center py={20}>
             <VStack spacing={4}>
               <Spinner size="xl" color="#7C9A7E" thickness="3px" />
@@ -144,7 +132,7 @@ export default function MenuSection() {
         )}
 
         {/* Menu grid */}
-        {!loading && !error && (
+        {!isLoading && !error && (
           <>
             {activeCategory === 'All' ? (
               CATEGORY_ORDER.filter((cat) => menuData[cat]).map((cat) => (

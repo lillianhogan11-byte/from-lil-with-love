@@ -1,23 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Text, VStack, HStack, Flex, Badge, Select, Spinner } from '@chakra-ui/react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PortalLayout from './PortalLayout';
 import { portalFetch } from './auth';
 
 const STATUS_COLORS = { pending: ['#2a2000','#C9A84C'], ready: ['#002a1a','#7CB97E'], completed: ['#1a1a1a','#555'], cancelled: ['#2a1a1a','#e07b7b'] };
 
 export default function Orders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => { portalFetch('/portal/api/orders').then(r => r.json()).then(d => { setOrders(d); setLoading(false); }); }, []);
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: () => portalFetch('/portal/api/orders').then(r => r.json()),
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
+  });
 
-  const updateStatus = async (id, status) => {
-    const res = await portalFetch(`/portal/api/orders/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-    const updated = await res.json();
-    setOrders(prev => prev.map(o => o.id === id ? updated : o));
-  };
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }) => portalFetch(`/portal/api/orders/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
+  });
 
-  if (loading) return <PortalLayout title="Orders"><Spinner color="#C9A84C" /></PortalLayout>;
+  const updateStatus = (id, status) => updateStatusMutation.mutate({ id, status });
+
+  if (isLoading) return <PortalLayout title="Orders"><Spinner color="#C9A84C" /></PortalLayout>;
 
   return (
     <PortalLayout title="Pickup Orders">

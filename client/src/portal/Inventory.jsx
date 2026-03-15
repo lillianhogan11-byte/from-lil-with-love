@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Text, VStack, HStack, Flex, Button, Input, Select, Grid, Spinner, Badge } from '@chakra-ui/react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PortalLayout from './PortalLayout';
 import { portalFetch } from './auth';
 
@@ -8,29 +9,32 @@ const CATS = ['flour','sugar','dairy','eggs','fats','flavoring','fruit','nuts','
 const UNITS = ['lbs','oz','cups','tbsp','units','bags','boxes','gallons','liters'];
 
 export default function Inventory() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({});
 
-  const load = () => portalFetch('/portal/api/inventory').then(r => r.json()).then(d => { setItems(d); setLoading(false); });
-  useEffect(() => { load(); }, []);
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['inventory'],
+    queryFn: () => portalFetch('/portal/api/inventory').then(r => r.json()),
+  });
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['inventory'] });
 
   const handleAdd = async (e) => {
     e.preventDefault();
     await portalFetch('/portal/api/inventory', { method: 'POST', body: JSON.stringify(form) });
-    setForm({}); setShowForm(false); load();
+    setForm({}); setShowForm(false); invalidate();
   };
 
   const updateQty = async (id, delta, current) => {
     const qty = Math.max(0, parseFloat(current) + delta);
     await portalFetch(`/portal/api/inventory/${id}`, { method: 'PATCH', body: JSON.stringify({ quantity: qty }) });
-    load();
+    invalidate();
   };
 
-  const del = async (id) => { if (!confirm('Delete?')) return; await portalFetch(`/portal/api/inventory/${id}`, { method: 'DELETE' }); load(); };
+  const del = async (id) => { if (!confirm('Delete?')) return; await portalFetch(`/portal/api/inventory/${id}`, { method: 'DELETE' }); invalidate(); };
 
-  if (loading) return <PortalLayout title="Inventory"><Spinner color="#C9A84C" /></PortalLayout>;
+  if (isLoading) return <PortalLayout title="Inventory"><Spinner color="#C9A84C" /></PortalLayout>;
 
   const low = items.filter(i => i.reorder_level > 0 && i.quantity <= i.reorder_level);
 

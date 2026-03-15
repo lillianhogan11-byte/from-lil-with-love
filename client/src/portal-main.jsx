@@ -2,6 +2,11 @@ import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ChakraProvider, Center, Spinner } from '@chakra-ui/react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 1000 * 60 * 5, retry: 2 } },
+});
 
 import PortalRoute from './portal/PortalRoute';
 import Login from './portal/Login';
@@ -26,6 +31,7 @@ function P({ children }) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
     <ChakraProvider>
       <BrowserRouter>
         <Suspense fallback={<Center minH="100vh"><Spinner size="xl" color="#7C9A7E" /></Center>}>
@@ -51,5 +57,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </Suspense>
       </BrowserRouter>
     </ChakraProvider>
+    </QueryClientProvider>
   </React.StrictMode>
 );

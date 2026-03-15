@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Grid, Text, VStack, HStack, Flex, Spinner, Badge } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
 import PortalLayout from './PortalLayout';
 import { portalFetch } from './auth';
 
@@ -14,10 +15,12 @@ function StatCard({ label, value, sub, color = '#C9A84C' }) {
 }
 
 export default function Dashboard() {
-  const [data, setData] = useState(null);
-  useEffect(() => { portalFetch('/portal/api/dashboard').then(r => r.json()).then(setData); }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => portalFetch('/portal/api/dashboard').then(r => r.json()),
+  });
 
-  if (!data) return <PortalLayout title="Dashboard"><Spinner color="#C9A84C" /></PortalLayout>;
+  if (isLoading || !data) return <PortalLayout title="Dashboard"><Spinner color="#C9A84C" /></PortalLayout>;
 
   const fmt = n => `$${parseFloat(n || 0).toFixed(2)}`;
 
