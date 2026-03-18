@@ -50,7 +50,15 @@ export default function Hero() {
           textAlign={{ base: 'center', md: 'left' }}
           px={{ base: 4, md: 0 }}
         >
-          <Logo size="lg" darkBg={true} />
+          <Box
+            bg="rgba(242, 237, 228, 0.88)"
+            px={10}
+            py={6}
+            borderRadius="2px"
+            backdropFilter="blur(4px)"
+          >
+            <Logo size="lg" darkBg={false} />
+          </Box>
 
           <Text
             fontFamily="Georgia, serif"
