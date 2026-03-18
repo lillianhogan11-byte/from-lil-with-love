@@ -38,7 +38,7 @@ export default function KioskApp() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#FAF7F2', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#F2EDE4', display: 'flex', flexDirection: 'column' }}>
       {screen === 'browse' && (
         <KioskMenu
           cart={cart}

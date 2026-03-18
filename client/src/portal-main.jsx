@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ChakraProvider, Center, Spinner } from '@chakra-ui/react';
+import theme from './theme';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -32,9 +33,9 @@ function P({ children }) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <BrowserRouter>
-        <Suspense fallback={<Center minH="100vh"><Spinner size="xl" color="#7C9A7E" /></Center>}>
+        <Suspense fallback={<Center minH="100vh"><Spinner size="xl" color="#6E2035" /></Center>}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/portal/login" element={<Login />} />

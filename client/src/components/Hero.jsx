@@ -8,6 +8,7 @@ import {
   VStack,
   Container,
 } from '@chakra-ui/react';
+import Logo from './Logo';
 
 export default function Hero() {
   const handleMenuClick = () => {
@@ -36,7 +37,7 @@ export default function Hero() {
           content: '""',
           position: 'absolute',
           inset: 0,
-          bg: 'rgba(26,26,26,0.48)',
+          bg: 'rgba(26,15,10,0.52)',
         }}
       />
 
@@ -49,35 +50,10 @@ export default function Hero() {
           textAlign={{ base: 'center', md: 'left' }}
           px={{ base: 4, md: 0 }}
         >
-          <Text
-            fontFamily="'Lato', sans-serif"
-            fontSize="xs"
-            fontWeight="700"
-            letterSpacing="0.2em"
-            textTransform="uppercase"
-            color="#7C9A7E"
-            opacity={0.95}
-          >
-            Franklin, Indiana
-          </Text>
-
-          <Heading
-            as="h1"
-            fontFamily="'Playfair Display', serif"
-            fontSize={{ base: '3xl', sm: '4xl', md: '5xl', lg: '6xl' }}
-            fontWeight="700"
-            lineHeight="1.15"
-            color="white"
-            letterSpacing="-0.01em"
-          >
-            The Biscuit Bar<br />
-            <Text as="span" fontStyle="italic" color="#F2F2F0">
-              Franklin, Indiana
-            </Text>
-          </Heading>
+          <Logo size="lg" darkBg={true} />
 
           <Text
-            fontFamily="'Lato', sans-serif"
+            fontFamily="Georgia, serif"
             fontSize={{ base: 'md', md: 'lg' }}
             fontWeight="300"
             color="whiteAlpha.900"
@@ -90,16 +66,16 @@ export default function Hero() {
             <Button
               onClick={handleMenuClick}
               size="lg"
-              bg="#C9A84C"
-              color="#1A1A1A"
-              fontFamily="'Lato', sans-serif"
+              bg="#6E2035"
+              color="white"
+              fontFamily="Georgia, serif"
               fontWeight="700"
               letterSpacing="0.08em"
               textTransform="uppercase"
               fontSize="sm"
               px={8}
               py={6}
-              _hover={{ bg: '#b8943d', transform: 'translateY(-2px)', boxShadow: 'lg' }}
+              _hover={{ bg: '#5A1929', transform: 'translateY(-2px)', boxShadow: 'lg' }}
               transition="all 0.25s ease"
               borderRadius="2px"
             >
@@ -113,7 +89,7 @@ export default function Hero() {
               variant="outline"
               borderColor="whiteAlpha.700"
               color="white"
-              fontFamily="'Lato', sans-serif"
+              fontFamily="Georgia, serif"
               fontWeight="700"
               letterSpacing="0.08em"
               textTransform="uppercase"
@@ -137,7 +113,7 @@ export default function Hero() {
         left={0}
         right={0}
         h="120px"
-        bgGradient="linear(to-t, #FAF7F2, transparent)"
+        bgGradient="linear(to-t, #F2EDE4, transparent)"
       />
     </Box>
   );
