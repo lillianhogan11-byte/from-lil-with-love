@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import MenuCard from './MenuCard';
 import { apiFetch } from '../api';
 
-const CATEGORY_ORDER = ['Biscuits', 'Biscuit Sandwiches', 'Biscuits & Spreads', 'Biscuits & Gravy', 'Coffee & Espresso'];
+const CATEGORY_ORDER = ['Biscuits', 'Flavored Biscuits', 'Biscuit Sandwiches', 'Biscuits & Spreads', 'Biscuits & Gravy', 'Coffee & Espresso'];
 
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('All');

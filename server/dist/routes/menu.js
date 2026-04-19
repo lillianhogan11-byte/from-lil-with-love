@@ -4,7 +4,7 @@ exports.default = register;
 function register(app, db) {
     // GET /api/menu — all items grouped by category
     app.get('/api/menu', (req, res) => {
-        const items = db.prepare('SELECT * FROM menu_items WHERE available = 1 ORDER BY category, id').all();
+        const items = db.prepare('SELECT * FROM menu_items WHERE available = 1 ORDER BY category, sort_order, id').all();
         const grouped = items.reduce((acc, item) => {
             if (!acc[item.category])
                 acc[item.category] = [];

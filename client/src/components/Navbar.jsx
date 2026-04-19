@@ -5,16 +5,20 @@ import {
   HStack,
   IconButton,
   VStack,
-  Collapse,
-  useDisclosure,
   Link,
   Container,
   Badge,
+  Text,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  DrawerBody,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import { HamburgerIcon } from '@chakra-ui/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import Logo from './Logo';
 
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
@@ -24,7 +28,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { isOpen, onToggle } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [scrolled, setScrolled] = useState(false);
   const { itemCount } = useCart();
   const navigate = useNavigate();
@@ -37,6 +41,7 @@ export default function Navbar() {
   }, []);
 
   const handleNavLink = (href) => {
+    onClose();
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -61,13 +66,22 @@ export default function Navbar() {
     >
       <Container maxW="7xl">
         <Flex h="70px" align="center" justify="space-between">
-          {/* Logo */}
+          {/* Wordmark */}
           <Link
             onClick={() => navigate('/')}
             _hover={{ textDecoration: 'none' }}
             cursor="pointer"
           >
-            <Logo size="sm" />
+            <Text
+              fontFamily="'Playfair Display', serif"
+              fontSize={{ base: 'xl', md: '2xl' }}
+              fontWeight="700"
+              color={scrolled ? '#1A0F0A' : 'white'}
+              letterSpacing="0.04em"
+              transition="color 0.3s ease"
+            >
+              Biscuit Bar
+            </Text>
           </Link>
 
           {/* Desktop nav */}
@@ -82,8 +96,8 @@ export default function Navbar() {
                 fontWeight="700"
                 letterSpacing="0.1em"
                 textTransform="uppercase"
-                color="#1A0F0A"
-                _hover={{ color: '#5C6E54', textDecoration: 'none' }}
+                color={scrolled ? '#1A0F0A' : 'white'}
+                _hover={{ color: '#7C9A7E', textDecoration: 'none' }}
                 transition="color 0.2s"
                 cursor="pointer"
               >
@@ -137,50 +151,56 @@ export default function Navbar() {
               )}
             </Box>
             <IconButton
-              onClick={onToggle}
-              icon={isOpen ? <CloseIcon w={4} h={4} /> : <HamburgerIcon w={6} h={6} />}
+              onClick={onOpen}
+              icon={<HamburgerIcon w={6} h={6} />}
               variant="ghost"
-              aria-label="Toggle menu"
-              color="#1A0F0A"
-              _hover={{ bg: 'transparent', color: '#5C6E54' }}
+              aria-label="Open menu"
+              color={scrolled ? '#1A0F0A' : 'white'}
+              _hover={{ bg: 'transparent', color: '#7C9A7E' }}
             />
           </HStack>
         </Flex>
-
-        {/* Mobile menu */}
-        <Collapse in={isOpen} animateOpacity>
-          <VStack
-            bg="#F2EDE4"
-            px={4}
-            pb={6}
-            pt={2}
-            spacing={4}
-            align="start"
-            borderTop="1px solid"
-            borderColor="#EDE8DF"
-          >
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                href={location.pathname === '/' ? link.href : undefined}
-                onClick={() => { onToggle(); if (location.pathname !== '/') handleNavLink(link.href); }}
-                fontFamily="Georgia, serif"
-                fontSize="sm"
-                fontWeight="700"
-                letterSpacing="0.1em"
-                textTransform="uppercase"
-                color="#1A0F0A"
-                _hover={{ color: '#5C6E54', textDecoration: 'none' }}
-                w="full"
-                py={1}
-                cursor="pointer"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </VStack>
-        </Collapse>
       </Container>
+
+      {/* Mobile drawer */}
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="xs">
+        <DrawerOverlay />
+        <DrawerContent bg="#F2EDE4">
+          <DrawerCloseButton color="#1A0F0A" size="lg" top={4} right={4} />
+          <DrawerBody pt={16} px={8}>
+            <VStack spacing={8} align="start">
+              <Text
+                fontFamily="'Playfair Display', serif"
+                fontSize="2xl"
+                fontWeight="700"
+                color="#1A0F0A"
+                letterSpacing="0.04em"
+                mb={2}
+              >
+                Biscuit Bar
+              </Text>
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={location.pathname === '/' ? link.href : undefined}
+                  onClick={() => handleNavLink(link.href)}
+                  fontFamily="Georgia, serif"
+                  fontSize="lg"
+                  fontWeight="700"
+                  letterSpacing="0.1em"
+                  textTransform="uppercase"
+                  color="#1A0F0A"
+                  _hover={{ color: '#7C9A7E', textDecoration: 'none' }}
+                  w="full"
+                  cursor="pointer"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </VStack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 }

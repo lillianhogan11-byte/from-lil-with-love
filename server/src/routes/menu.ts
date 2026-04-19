@@ -3,7 +3,7 @@ import { Application, Request, Response } from 'express';
 export default function register(app: Application, db: any): void {
   // GET /api/menu — all items grouped by category
   app.get('/api/menu', (req: Request, res: Response) => {
-    const items = db.prepare('SELECT * FROM menu_items WHERE available = 1 ORDER BY category, id').all() as any[];
+    const items = db.prepare('SELECT * FROM menu_items WHERE available = 1 ORDER BY category, sort_order, id').all() as any[];
     const grouped = items.reduce((acc: Record<string, any[]>, item: any) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);

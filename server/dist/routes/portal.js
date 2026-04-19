@@ -58,6 +58,11 @@ function register(app, db) {
         const r = db.prepare('INSERT INTO bakery_income (date,description,amount,source,notes) VALUES (?,?,?,?,?)').run(date, description || '', amount, source || '', notes || '');
         res.status(201).json(db.prepare('SELECT * FROM bakery_income WHERE id=?').get(r.lastInsertRowid));
     });
+    app.put('/portal/api/income/:id', auth_1.authMiddleware, (req, res) => {
+        const { date, description, amount, source, notes } = req.body;
+        db.prepare('UPDATE bakery_income SET date=COALESCE(?,date), description=COALESCE(?,description), amount=COALESCE(?,amount), source=COALESCE(?,source), notes=COALESCE(?,notes) WHERE id=?').run(date || null, description || null, amount || null, source || null, notes || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM bakery_income WHERE id=?').get(req.params.id));
+    });
     app.delete('/portal/api/income/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM bakery_income WHERE id=?').run(req.params.id);
         res.json({ ok: true });
@@ -74,6 +79,11 @@ function register(app, db) {
         }
         const r = db.prepare('INSERT INTO bakery_expenses (date,description,amount,category,receipt_ref,deductible,notes) VALUES (?,?,?,?,?,?,?)').run(date, description, amount, category || 'other', receipt_ref || '', deductible !== false ? 1 : 0, notes || '');
         res.status(201).json(db.prepare('SELECT * FROM bakery_expenses WHERE id=?').get(r.lastInsertRowid));
+    });
+    app.put('/portal/api/expenses/:id', auth_1.authMiddleware, (req, res) => {
+        const { date, description, amount, category, receipt_ref, deductible, notes } = req.body;
+        db.prepare('UPDATE bakery_expenses SET date=COALESCE(?,date), description=COALESCE(?,description), amount=COALESCE(?,amount), category=COALESCE(?,category), receipt_ref=COALESCE(?,receipt_ref), deductible=COALESCE(?,deductible), notes=COALESCE(?,notes) WHERE id=?').run(date || null, description || null, amount || null, category || null, receipt_ref || null, deductible ?? null, notes || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM bakery_expenses WHERE id=?').get(req.params.id));
     });
     app.delete('/portal/api/expenses/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM bakery_expenses WHERE id=?').run(req.params.id);
@@ -116,6 +126,13 @@ function register(app, db) {
         const r = db.prepare('INSERT INTO bakery_recipes (name,ingredient_cost,selling_price,batch_yield,cost_per_unit,margin_percent,notes) VALUES (?,?,?,?,?,?,?)').run(name, ingredient_cost || 0, selling_price || 0, batch_yield || 0, cpu || 0, margin || 0, notes || '');
         res.status(201).json(db.prepare('SELECT * FROM bakery_recipes WHERE id=?').get(r.lastInsertRowid));
     });
+    app.put('/portal/api/recipes/:id', auth_1.authMiddleware, (req, res) => {
+        const { name, ingredient_cost, selling_price, batch_yield, notes } = req.body;
+        const cpu = batch_yield && ingredient_cost ? ingredient_cost / batch_yield : null;
+        const margin = selling_price && cpu ? ((selling_price - cpu) / selling_price * 100) : null;
+        db.prepare('UPDATE bakery_recipes SET name=COALESCE(?,name), ingredient_cost=COALESCE(?,ingredient_cost), selling_price=COALESCE(?,selling_price), batch_yield=COALESCE(?,batch_yield), cost_per_unit=COALESCE(?,cost_per_unit), margin_percent=COALESCE(?,margin_percent), notes=COALESCE(?,notes) WHERE id=?').run(name || null, ingredient_cost ?? null, selling_price ?? null, batch_yield ?? null, cpu, margin, notes || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM bakery_recipes WHERE id=?').get(req.params.id));
+    });
     app.delete('/portal/api/recipes/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM bakery_recipes WHERE id=?').run(req.params.id);
         res.json({ ok: true });
@@ -132,6 +149,11 @@ function register(app, db) {
         }
         const r = db.prepare('INSERT INTO suppliers (name,contact_name,phone,email,address,notes) VALUES (?,?,?,?,?,?)').run(name, contact_name || '', phone || '', email || '', address || '', notes || '');
         res.status(201).json(db.prepare('SELECT * FROM suppliers WHERE id=?').get(r.lastInsertRowid));
+    });
+    app.put('/portal/api/suppliers/:id', auth_1.authMiddleware, (req, res) => {
+        const { name, contact_name, phone, email, address, notes } = req.body;
+        db.prepare('UPDATE suppliers SET name=COALESCE(?,name), contact_name=COALESCE(?,contact_name), phone=COALESCE(?,phone), email=COALESCE(?,email), address=COALESCE(?,address), notes=COALESCE(?,notes) WHERE id=?').run(name || null, contact_name || null, phone || null, email || null, address || null, notes || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM suppliers WHERE id=?').get(req.params.id));
     });
     app.delete('/portal/api/suppliers/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM suppliers WHERE id=?').run(req.params.id);
@@ -150,6 +172,11 @@ function register(app, db) {
         const r = db.prepare('INSERT INTO events (name,date,location,revenue,expenses,notes) VALUES (?,?,?,?,?,?)').run(name, date, location || '', revenue || 0, expenses || 0, notes || '');
         res.status(201).json(db.prepare('SELECT * FROM events WHERE id=?').get(r.lastInsertRowid));
     });
+    app.put('/portal/api/events/:id', auth_1.authMiddleware, (req, res) => {
+        const { name, date, location, revenue, expenses, notes } = req.body;
+        db.prepare('UPDATE events SET name=COALESCE(?,name), date=COALESCE(?,date), location=COALESCE(?,location), revenue=COALESCE(?,revenue), expenses=COALESCE(?,expenses), notes=COALESCE(?,notes) WHERE id=?').run(name || null, date || null, location || null, revenue ?? null, expenses ?? null, notes || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM events WHERE id=?').get(req.params.id));
+    });
     app.delete('/portal/api/events/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
         res.json({ ok: true });
@@ -166,6 +193,11 @@ function register(app, db) {
         }
         const r = db.prepare('INSERT INTO mileage_log (date,origin,destination,miles,purpose) VALUES (?,?,?,?,?)').run(date, origin || '', destination || '', miles, purpose || '');
         res.status(201).json(db.prepare('SELECT * FROM mileage_log WHERE id=?').get(r.lastInsertRowid));
+    });
+    app.put('/portal/api/mileage/:id', auth_1.authMiddleware, (req, res) => {
+        const { date, origin, destination, miles, purpose } = req.body;
+        db.prepare('UPDATE mileage_log SET date=COALESCE(?,date), origin=COALESCE(?,origin), destination=COALESCE(?,destination), miles=COALESCE(?,miles), purpose=COALESCE(?,purpose) WHERE id=?').run(date || null, origin || null, destination || null, miles ?? null, purpose || null, req.params.id);
+        res.json(db.prepare('SELECT * FROM mileage_log WHERE id=?').get(req.params.id));
     });
     app.delete('/portal/api/mileage/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM mileage_log WHERE id=?').run(req.params.id);

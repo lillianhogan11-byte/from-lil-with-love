@@ -25,8 +25,8 @@ export default function About() {
             boxShadow="0 4px 24px rgba(26,26,26,0.12)"
           >
             <Image
-              src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80"
-              alt="Hands tending a garden with fresh herbs and vegetables"
+              src="/about-process.webp"
+              alt="Biscuit dough being cut by hand in the kitchen"
               w="full"
               h="full"
               objectFit="cover"
@@ -94,7 +94,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                There is something profound about knowing where your food comes from — the hands that tended the soil, the sun and rain that fed the roots, the care that carried each ingredient from the earth to your table. At The Biscuit Bar, we believe that relationship with your food is not a luxury. It is a birthright. Every biscuit we bake is made with ingredients grown locally and organically, because what nourishes the land ultimately nourishes us.
+                There is something profound about knowing where your food comes from — the hands that tended the soil, the sun and rain that fed the roots, the care that carried each ingredient from the earth to your table. At The Biscuit Bar, every biscuit we bake is made with ingredients grown locally and organically, whenever possible. We firmly believe that what nourishes the land ultimately nourishes us.
               </Text>
 
               <Text
@@ -103,7 +103,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                Every biscuit we make incorporates something grown right here — fresh herbs from local farms, flour from a regional mill, raw honey from hives just down the road. Our biscuits are the foundation of everything on the menu, and that foundation is built on real ingredients from real people in this community. This isn&apos;t a marketing story. It&apos;s the only way we know how to bake.
+                Every biscuit we make incorporates something grown right here — fresh herbs from local farms, eggs and cheese from your neighborhood farmer, raw honey from hives just down the road. Our biscuits are the foundation of everything on the menu, and that foundation is built on real ingredients from real people in this community.
               </Text>
 
               <Text
@@ -112,7 +112,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                A portion of every sale at The Biscuit Bar goes directly to local charities that help build communities and save lives — from food pantries and youth programs to mental health initiatives right here in Johnson County. We believe business can be an act of love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
+                A portion of every sale at The Biscuit Bar goes directly to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe business can be based on a foundation rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
               </Text>
             </VStack>
 
