@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, HStack, VStack, Badge } from '@chakra-ui/react';
 import SimpleList from './SimpleList';
 
-const CATS = ['ingredients','equipment','packaging','marketing','kitchen','mileage','fees','other'];
+const CATS = ['ingredients','labor','electricity','payment_processing','equipment','packaging','marketing','kitchen','mileage','fees','other'];
 
 export default function Expenses() {
   return (

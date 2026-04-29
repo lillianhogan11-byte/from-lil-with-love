@@ -1,6 +1,30 @@
 import { Application, Request, Response } from 'express';
 import http from 'http';
+import nodemailer from 'nodemailer';
 import { authMiddleware } from './auth';
+
+function createMailer() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return null;
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+  });
+}
+
+async function sendPreOrderEmail(name: string, email: string | null, phone: string | null, market_date: string, items: any[]): Promise<void> {
+  const mailer = createMailer();
+  if (!mailer) return;
+  const itemLines = items.map((i: any) => `• ${i.quantity}x ${i.name}`).join('\n');
+  const contact = [email, phone].filter(Boolean).join(' / ') || 'No contact provided';
+  await mailer.sendMail({
+    from: `"Biscuit Bar" <${process.env.GMAIL_USER}>`,
+    to: 'lillianhogan11@gmail.com',
+    subject: `New Pre-Order — ${name} for ${market_date}`,
+    text: `New pre-order received!\n\nName: ${name}\nContact: ${contact}\nMarket Date: ${market_date}\n\nItems:\n${itemLines}\n\nLog in to the portal to confirm: https://portal.biscuitbar.cafe`,
+  }).catch(() => {});
+}
 
 function notify(text: string): void {
   try {
@@ -82,6 +106,46 @@ export default function register(app: Application, db: any): void {
     const { status } = req.body as { status: string };
     db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
     res.json(db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id));
+  });
+
+  // POST /api/preorders — public pre-order submission
+  app.post('/api/preorders', (req: Request, res: Response) => {
+    const { name, email, phone, market_date, items, notes } = req.body as Record<string, any>;
+    if (!name || !market_date || !items) {
+      res.status(400).json({ error: 'name, market_date, and items are required' });
+      return;
+    }
+    const itemsJson = typeof items === 'string' ? items : JSON.stringify(items);
+    const stmt = db.prepare(
+      'INSERT INTO preorders (name, email, phone, market_date, items, notes) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const result = stmt.run(name, email || null, phone || null, market_date, itemsJson, notes || null) as { lastInsertRowid: number };
+    const preorder = db.prepare('SELECT * FROM preorders WHERE id = ?').get(result.lastInsertRowid) as any;
+    preorder.items = JSON.parse(preorder.items);
+    notify(`📋 New pre-order from ${name} for market on ${market_date}!`);
+    sendPreOrderEmail(name, email || null, phone || null, market_date, preorder.items);
+    res.status(201).json(preorder);
+  });
+
+  // GET /portal/api/preorders — all pre-orders (portal, authenticated)
+  app.get('/portal/api/preorders', authMiddleware as any, (req: Request, res: Response) => {
+    const preorders = db.prepare('SELECT * FROM preorders ORDER BY market_date ASC, created_at DESC').all() as any[];
+    preorders.forEach(p => { try { p.items = JSON.parse(p.items); } catch {} });
+    res.json(preorders);
+  });
+
+  // PATCH /portal/api/preorders/:id — update status
+  app.patch('/portal/api/preorders/:id', authMiddleware as any, (req: Request, res: Response) => {
+    const { status } = req.body as { status: string };
+    const valid = ['pending', 'confirmed', 'ready', 'cancelled'];
+    if (!valid.includes(status)) {
+      res.status(400).json({ error: 'Invalid status' });
+      return;
+    }
+    db.prepare('UPDATE preorders SET status = ? WHERE id = ?').run(status, req.params.id);
+    const preorder = db.prepare('SELECT * FROM preorders WHERE id = ?').get(req.params.id) as any;
+    try { preorder.items = JSON.parse(preorder.items); } catch {}
+    res.json(preorder);
   });
 
   // POST /api/pos/orders — POS order (authenticated)

@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import MenuSection from './components/MenuSection';
+import PreOrder from './components/PreOrder';
 import About from './components/About';
 import Footer from './components/Footer';
 import Cart from './pages/Cart';
@@ -28,6 +29,7 @@ import Mileage from './portal/Mileage';
 import Suppliers from './portal/Suppliers';
 import MenuManager from './portal/MenuManager';
 import TaxExport from './portal/TaxExport';
+import PreOrders from './portal/PreOrders';
 
 function HomePage() {
   return (
@@ -36,6 +38,7 @@ function HomePage() {
       <Box as="main">
         <Hero />
         <MenuSection />
+        <PreOrder />
         <About />
       </Box>
       <Footer />
@@ -72,6 +75,7 @@ function App() {
       <Route path="/portal/suppliers" element={<P><Suppliers /></P>} />
       <Route path="/portal/menu" element={<P><MenuManager /></P>} />
       <Route path="/portal/taxes" element={<P><TaxExport /></P>} />
+      <Route path="/portal/preorders" element={<P><PreOrders /></P>} />
 
       {/* POS */}
       <Route path="/pos" element={<P><POSSystem /></P>} />

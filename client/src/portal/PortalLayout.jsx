@@ -16,6 +16,7 @@ const NAV = [
   { label: '🤝 Suppliers', path: '/portal/suppliers' },
   { label: '🍞 Menu', path: '/portal/menu' },
   { label: '📁 Tax Export', path: '/portal/taxes' },
+  { label: '📋 Pre-Orders', path: '/portal/preorders' },
 ];
 
 function SidebarContent({ onClose }) {

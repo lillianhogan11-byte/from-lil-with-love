@@ -94,7 +94,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                There is something profound about knowing where your food comes from — the hands that tended the soil, the sun and rain that fed the roots, the care that carried each ingredient from the earth to your table. At The Biscuit Bar, every biscuit we bake is made with ingredients grown locally and organically, whenever possible. We firmly believe that what nourishes the land ultimately nourishes us.
+                We've become disconnected from the food we eat. Manufactured in a factory, pumped with shelf-stable ingredients for preservation, we prioritize convenience over health. Biscuit Bar was created to disrupt the norm — fresh, homemade biscuits that you can grab on the go while knowing the food you and your family eat is made with real ingredients, sourced locally and organically whenever possible. Creatively crafted with unique combinations that keep you coming back, Biscuit Bar supports Johnson County farmers and families.
               </Text>
 
               <Text
@@ -103,7 +103,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                Every biscuit we make incorporates something grown right here — fresh herbs from local farms, eggs and cheese from your neighborhood farmer, raw honey from hives just down the road. Our biscuits are the foundation of everything on the menu, and that foundation is built on real ingredients from real people in this community.
+                Our biscuits are the foundation of everything on the menu, and that foundation is built on real ingredients from real people in this community.
               </Text>
 
               <Text
@@ -112,7 +112,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                A portion of every sale at The Biscuit Bar goes directly to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe business can be based on a foundation rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
+                A portion of every sale at Biscuit Bar goes directly to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe the best businesses are rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
               </Text>
             </VStack>
 
