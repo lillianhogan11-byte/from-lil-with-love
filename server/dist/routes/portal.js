@@ -69,7 +69,13 @@ function register(app, db) {
     });
     // ── Expenses ──────────────────────────────────────────
     app.get('/portal/api/expenses', auth_1.authMiddleware, (req, res) => {
-        res.json(db.prepare('SELECT * FROM bakery_expenses ORDER BY date DESC').all());
+        const rows = db.prepare(`
+      SELECT e.*, CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_receipt
+      FROM bakery_expenses e
+      LEFT JOIN expense_receipts r ON r.expense_id = e.id
+      ORDER BY e.date DESC
+    `).all();
+        res.json(rows);
     });
     app.post('/portal/api/expenses', auth_1.authMiddleware, (req, res) => {
         const { date, description, amount, category, receipt_ref, deductible, notes } = req.body;
@@ -87,6 +93,37 @@ function register(app, db) {
     });
     app.delete('/portal/api/expenses/:id', auth_1.authMiddleware, (req, res) => {
         db.prepare('DELETE FROM bakery_expenses WHERE id=?').run(req.params.id);
+        res.json({ ok: true });
+    });
+    // ── Expense Receipts ──────────────────────────────────
+    app.post('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
+        const { filename, mime_type, data } = req.body;
+        if (!filename || !mime_type || !data) {
+            res.status(400).json({ error: 'filename, mime_type, data required' });
+            return;
+        }
+        const expenseId = req.params.id;
+        const exists = db.prepare('SELECT id FROM bakery_expenses WHERE id=?').get(expenseId);
+        if (!exists) {
+            res.status(404).json({ error: 'Expense not found' });
+            return;
+        }
+        db.prepare('INSERT OR REPLACE INTO expense_receipts (expense_id, filename, mime_type, data) VALUES (?,?,?,?)').run(expenseId, filename, mime_type, data);
+        res.json({ ok: true });
+    });
+    app.get('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
+        const receipt = db.prepare('SELECT * FROM expense_receipts WHERE expense_id=?').get(req.params.id);
+        if (!receipt) {
+            res.status(404).json({ error: 'No receipt' });
+            return;
+        }
+        const buf = Buffer.from(receipt.data, 'base64');
+        res.set('Content-Type', receipt.mime_type);
+        res.set('Content-Disposition', `inline; filename="${receipt.filename}"`);
+        res.send(buf);
+    });
+    app.delete('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
+        db.prepare('DELETE FROM expense_receipts WHERE expense_id=?').run(req.params.id);
         res.json({ ok: true });
     });
     // ── Inventory ─────────────────────────────────────────

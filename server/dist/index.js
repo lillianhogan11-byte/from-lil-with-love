@@ -62,6 +62,17 @@ db.exec(`
     created_at TEXT
   )
 `);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS expense_receipts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    expense_id INTEGER NOT NULL UNIQUE,
+    filename TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    data TEXT NOT NULL,
+    uploaded_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (expense_id) REFERENCES bakery_expenses(id) ON DELETE CASCADE
+  )
+`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_menu_items_category ON menu_items(category)`);
