@@ -21,8 +21,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 const NAV_LINKS = [
-  { label: 'Home', href: '#home' },
   { label: 'Menu', href: '#menu' },
+  { label: 'Pre-Order', href: '#preorder' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ];

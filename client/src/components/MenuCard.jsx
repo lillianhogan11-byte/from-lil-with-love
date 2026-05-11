@@ -6,20 +6,10 @@ import {
   Heading,
   VStack,
   Flex,
-  Button,
 } from '@chakra-ui/react';
-import { useCart } from '../context/CartContext';
 
 export default function MenuCard({ item }) {
   const [imgError, setImgError] = useState(false);
-  const [added, setAdded] = useState(false);
-  const { addItem } = useCart();
-
-  function handleAddToCart() {
-    addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-  }
 
   return (
     <Box
@@ -96,31 +86,7 @@ export default function MenuCard({ item }) {
           );
         })()}
 
-        <Flex w="full" justify="space-between" align="center" pt={1}>
-          <Text
-            fontFamily="'Playfair Display', serif"
-            fontSize="lg"
-            fontWeight="600"
-            color="#C9A84C"
-          >
-            ${item.price.toFixed(2)}
-          </Text>
-          <Button
-            size="sm"
-            bg={added ? '#7C9A7E' : '#C9A84C'}
-            color="#1A1A1A"
-            fontFamily="'Lato', sans-serif"
-            fontWeight="700"
-            fontSize="xs"
-            letterSpacing="0.05em"
-            px={4}
-            _hover={{ bg: added ? '#6a897c' : '#b8943e', transform: 'translateY(-1px)' }}
-            transition="all 0.2s"
-            onClick={handleAddToCart}
-          >
-            {added ? 'Added!' : 'Add to Cart'}
-          </Button>
-        </Flex>
+
       </VStack>
     </Box>
   );
