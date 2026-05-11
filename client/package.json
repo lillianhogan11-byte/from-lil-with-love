@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:public": "vite build --config vite.public.config.js",
-    "build:portal": "vite build --config vite.portal.config.js",
+    "build:portal": "vite build --config vite.portal.config.js && cp dist-portal/portal.html dist-portal/index.html",
     "build:kiosk": "vite build --config vite.kiosk.config.js",
     "build:all": "npm run build:public && npm run build:portal && npm run build:kiosk"
   },
