@@ -67,15 +67,34 @@ export default function MenuCard({ item }) {
           {item.name}
         </Heading>
 
-        <Text
-          fontFamily="'Lato', sans-serif"
-          fontSize="sm"
-          color="#666"
-          lineHeight="1.65"
-          noOfLines={3}
-        >
-          {item.description}
-        </Text>
+        {(() => {
+          const parts = (item.description || '').split(/\n+Suggested pairing:/i);
+          const mainDesc = parts[0].trim();
+          const pairing = parts[1] ? parts[1].trim() : null;
+          return (
+            <>
+              <Text
+                fontFamily="'Lato', sans-serif"
+                fontSize="sm"
+                color="#666"
+                lineHeight="1.65"
+              >
+                {mainDesc}
+              </Text>
+              {pairing && (
+                <Text
+                  fontFamily="'Lato', sans-serif"
+                  fontSize="xs"
+                  color="#7C9A7E"
+                  lineHeight="1.6"
+                  fontStyle="italic"
+                >
+                  Suggested pairing: {pairing}
+                </Text>
+              )}
+            </>
+          );
+        })()}
 
         <Flex w="full" justify="space-between" align="center" pt={1}>
           <Text
