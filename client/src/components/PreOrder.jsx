@@ -24,7 +24,7 @@ export default function PreOrder() {
             fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: '36px', fontWeight: '700', color: '#2a1a10', margin: '0 0 12px'
           }}>
-            Pre-Order for Market
+            Pre-Order
           </h2>
           <p style={{
             fontFamily: "'Lato', sans-serif", color: '#7a6a5a',
