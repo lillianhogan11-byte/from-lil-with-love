@@ -53,8 +53,8 @@ export default function About() {
                   color="#7C9A7E"
                   lineHeight="1.6"
                 >
-                  A portion of every sale goes to<br />
-                  local charities that build communities
+                  A future where every biscuit sold<br />
+                  gives back to the community
                 </Text>
               </HStack>
             </Box>
@@ -70,7 +70,7 @@ export default function About() {
               textTransform="uppercase"
               color="#7C9A7E"
             >
-              Our Philosophy
+              Our Philosophy and Vision
             </Text>
 
             <Heading
@@ -94,7 +94,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                We've become disconnected from the food we eat. Manufactured in a factory, pumped with shelf-stable ingredients for preservation, we prioritize convenience over health. Biscuit Bar was created to disrupt the norm — fresh, homemade biscuits that you can grab on the go while knowing the food you and your family eat is made with real ingredients, sourced locally and organically whenever possible. Creatively crafted with unique combinations that keep you coming back, Biscuit Bar supports Johnson County farmers and families.
+                We've become disconnected from the food we eat. Manufactured in a factory, pumped with shelf-stable ingredients for preservation, we prioritize convenience over health. Biscuit Bar was created to disrupt the norm — fresh, homemade biscuits that you can grab on the go while knowing the food you and your family eat is made with real ingredients, sourced locally and organically whenever possible. Creatively crafted with unique combinations that keep you coming back. Our vision is to partner directly with Johnson County farmers and families to bring you the freshest ingredients from people we know and trust.
               </Text>
 
               <Text
@@ -112,39 +112,11 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                A portion of every sale at Biscuit Bar goes directly to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe the best businesses are rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
+                As Biscuit Bar grows, our goal is to donate a portion of every sale to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe the best businesses are rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
               </Text>
             </VStack>
 
-            {/* Stats */}
-            <SimpleGrid columns={3} spacing={6} pt={4} w="full">
-              {[
-                { value: '100%', label: 'Locally Sourced' },
-                { value: '5+', label: 'Farm Partners' },
-                { value: '10%', label: 'To Charity' },
-              ].map(({ value, label }) => (
-                <VStack key={label} spacing={1} align="start">
-                  <Text
-                    fontFamily="'Playfair Display', serif"
-                    fontSize={{ base: '2xl', md: '3xl' }}
-                    fontWeight="700"
-                    color="#7C9A7E"
-                  >
-                    {value}
-                  </Text>
-                  <Text
-                    fontFamily="'Lato', sans-serif"
-                    fontSize="xs"
-                    fontWeight="700"
-                    letterSpacing="0.1em"
-                    textTransform="uppercase"
-                    color="#888"
-                  >
-                    {label}
-                  </Text>
-                </VStack>
-              ))}
-            </SimpleGrid>
+
           </VStack>
         </SimpleGrid>
       </Container>
