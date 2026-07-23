@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Text, HStack, VStack, Badge, Box, Spinner, Tooltip } from '@chakra-ui/react';
 import SimpleList from './SimpleList';
 import { portalFetch } from './auth';
@@ -8,40 +8,40 @@ const CATS = ['ingredients','labor','electricity','payment_processing','equipmen
 function ReceiptButton({ item, onRefresh }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
-  const [hasReceipt, setHasReceipt] = useState(!!item.has_receipt);
+  const [receiptCount, setReceiptCount] = useState(item.receipt_count || 0);
+  const [receipts, setReceipts] = useState(null); // null = not loaded, [] = loaded empty
+  const [showList, setShowList] = useState(false);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
+  // Keep in sync if parent refreshes
+  useEffect(() => {
+    setReceiptCount(item.receipt_count || 0);
+  }, [item.receipt_count]);
+
+  const loadReceipts = async () => {
     try {
-      const data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          // strip "data:mime/type;base64," prefix
-          const result = reader.result;
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      await portalFetch(`/portal/api/expenses/${item.id}/receipt`, {
-        method: 'POST',
-        body: JSON.stringify({ filename: file.name, mime_type: file.type, data }),
-      });
-      setHasReceipt(true);
-      if (onRefresh) onRefresh();
+      const res = await portalFetch(`/portal/api/expenses/${item.id}/receipts`);
+      if (res.ok) {
+        const data = await res.json();
+        setReceipts(data);
+        setReceiptCount(data.length);
+      }
     } catch (err) {
-      console.error('Receipt upload failed', err);
-    } finally {
-      setUploading(false);
-      e.target.value = '';
+      console.error('Failed to load receipts', err);
     }
   };
 
-  const handleView = async () => {
+  const handleToggleList = async () => {
+    if (!showList) {
+      await loadReceipts();
+      setShowList(true);
+    } else {
+      setShowList(false);
+    }
+  };
+
+  const handleView = async (rid) => {
     try {
-      const res = await portalFetch(`/portal/api/expenses/${item.id}/receipt`);
+      const res = await portalFetch(`/portal/api/expenses/${item.id}/receipts/${rid}`);
       if (!res.ok) { alert('Receipt not found'); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -51,49 +51,72 @@ function ReceiptButton({ item, onRefresh }) {
     }
   };
 
-  const handleRemove = async (e) => {
+  const handleRemove = async (e, rid) => {
     e.stopPropagation();
     if (!confirm('Remove this receipt?')) return;
-    await portalFetch(`/portal/api/expenses/${item.id}/receipt`, { method: 'DELETE' });
-    setHasReceipt(false);
+    await portalFetch(`/portal/api/expenses/${item.id}/receipts/${rid}`, { method: 'DELETE' });
+    const updated = (receipts || []).filter(r => r.id !== rid);
+    setReceipts(updated);
+    setReceiptCount(updated.length);
+    if (updated.length === 0) setShowList(false);
     if (onRefresh) onRefresh();
+  };
+
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const res = await portalFetch(`/portal/api/expenses/${item.id}/receipt`, {
+          method: 'POST',
+          body: JSON.stringify({ filename: file.name, mime_type: file.type, data }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          alert(`Upload failed for ${file.name} (${res.status}): ${body.error || 'Unknown error'}`);
+        }
+      }
+      await loadReceipts();
+      setShowList(true);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Receipt upload failed', err);
+      alert('Upload failed — check your connection and try again.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   if (uploading) return <Spinner size="xs" color="#C9A84C" />;
 
   return (
-    <HStack spacing={1}>
-      {hasReceipt ? (
-        <>
-          <Tooltip label="View receipt" placement="top">
-            <Box
+    <VStack spacing={1} align="end">
+      <HStack spacing={1}>
+        {receiptCount > 0 && (
+          <Tooltip label={showList ? 'Hide receipts' : `View ${receiptCount} receipt${receiptCount > 1 ? 's' : ''}`} placement="top">
+            <HStack
               as="button"
-              onClick={handleView}
-              fontSize="14px"
-              title="View receipt"
+              spacing={0.5}
+              onClick={handleToggleList}
               cursor="pointer"
-              color="#C9A84C"
-              _hover={{ color: '#e8c26c' }}
+              _hover={{ opacity: 0.8 }}
             >
-              🧾
-            </Box>
+              <Box fontSize="14px" color="#C9A84C">🧾</Box>
+              {receiptCount > 1 && (
+                <Box fontSize="10px" color="#C9A84C" fontWeight="bold" lineHeight={1}>{receiptCount}</Box>
+              )}
+            </HStack>
           </Tooltip>
-          <Tooltip label="Remove receipt" placement="top">
-            <Box
-              as="button"
-              onClick={handleRemove}
-              fontSize="10px"
-              color="#555"
-              cursor="pointer"
-              _hover={{ color: '#e07b7b' }}
-              title="Remove receipt"
-            >
-              ✕
-            </Box>
-          </Tooltip>
-        </>
-      ) : (
-        <Tooltip label="Upload receipt" placement="top">
+        )}
+        <Tooltip label="Attach receipt(s)" placement="top">
           <Box
             as="button"
             onClick={() => inputRef.current?.click()}
@@ -101,20 +124,64 @@ function ReceiptButton({ item, onRefresh }) {
             color="#444"
             cursor="pointer"
             _hover={{ color: '#888' }}
-            title="Upload receipt"
+            title="Attach receipt(s)"
           >
             📎
           </Box>
         </Tooltip>
+      </HStack>
+
+      {showList && receipts && receipts.length > 0 && (
+        <VStack
+          align="start"
+          spacing={0.5}
+          bg="#1a1a1a"
+          border="1px solid #333"
+          borderRadius="4px"
+          p={1.5}
+          minW="160px"
+        >
+          {receipts.map((r) => (
+            <HStack key={r.id} spacing={1} width="100%" justify="space-between">
+              <Box
+                as="button"
+                onClick={() => handleView(r.id)}
+                fontSize="11px"
+                color="#aaa"
+                cursor="pointer"
+                _hover={{ color: '#C9A84C' }}
+                textAlign="left"
+                maxW="130px"
+                isTruncated
+                title={r.filename}
+              >
+                {r.filename.length > 18 ? r.filename.slice(0, 16) + '…' : r.filename}
+              </Box>
+              <Box
+                as="button"
+                onClick={(e) => handleRemove(e, r.id)}
+                fontSize="9px"
+                color="#555"
+                cursor="pointer"
+                _hover={{ color: '#e07b7b' }}
+                flexShrink={0}
+              >
+                ✕
+              </Box>
+            </HStack>
+          ))}
+        </VStack>
       )}
+
       <input
         ref={inputRef}
         type="file"
         accept="image/*,application/pdf"
+        multiple
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-    </HStack>
+    </VStack>
   );
 }
 

@@ -23,7 +23,7 @@ app.use(cors({
   ],
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // Static files now served by nginx — not needed here
 
@@ -68,7 +68,7 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS expense_receipts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    expense_id INTEGER NOT NULL UNIQUE,
+    expense_id INTEGER NOT NULL,
     filename TEXT NOT NULL,
     mime_type TEXT NOT NULL,
     data TEXT NOT NULL,

@@ -70,9 +70,9 @@ function register(app, db) {
     // ── Expenses ──────────────────────────────────────────
     app.get('/portal/api/expenses', auth_1.authMiddleware, (req, res) => {
         const rows = db.prepare(`
-      SELECT e.*, CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_receipt
+      SELECT e.*,
+        COALESCE((SELECT COUNT(*) FROM expense_receipts WHERE expense_id = e.id), 0) as receipt_count
       FROM bakery_expenses e
-      LEFT JOIN expense_receipts r ON r.expense_id = e.id
       ORDER BY e.date DESC
     `).all();
         res.json(rows);
@@ -95,7 +95,13 @@ function register(app, db) {
         db.prepare('DELETE FROM bakery_expenses WHERE id=?').run(req.params.id);
         res.json({ ok: true });
     });
-    // ── Expense Receipts ──────────────────────────────────
+    // ── Expense Receipts (multi-receipt support) ──────────
+    // List all receipts for an expense
+    app.get('/portal/api/expenses/:id/receipts', auth_1.authMiddleware, (req, res) => {
+        const rows = db.prepare('SELECT id, filename, mime_type, uploaded_at FROM expense_receipts WHERE expense_id=? ORDER BY uploaded_at ASC').all(req.params.id);
+        res.json(rows);
+    });
+    // Upload a new receipt (appends — no longer replaces)
     app.post('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
         const { filename, mime_type, data } = req.body;
         if (!filename || !mime_type || !data) {
@@ -108,11 +114,29 @@ function register(app, db) {
             res.status(404).json({ error: 'Expense not found' });
             return;
         }
-        db.prepare('INSERT OR REPLACE INTO expense_receipts (expense_id, filename, mime_type, data) VALUES (?,?,?,?)').run(expenseId, filename, mime_type, data);
+        const r = db.prepare('INSERT INTO expense_receipts (expense_id, filename, mime_type, data) VALUES (?,?,?,?)').run(expenseId, filename, mime_type, data);
+        res.json({ ok: true, id: r.lastInsertRowid });
+    });
+    // View a specific receipt by its own ID
+    app.get('/portal/api/expenses/:id/receipts/:rid', auth_1.authMiddleware, (req, res) => {
+        const receipt = db.prepare('SELECT * FROM expense_receipts WHERE id=? AND expense_id=?').get(req.params.rid, req.params.id);
+        if (!receipt) {
+            res.status(404).json({ error: 'Receipt not found' });
+            return;
+        }
+        const buf = Buffer.from(receipt.data, 'base64');
+        res.set('Content-Type', receipt.mime_type);
+        res.set('Content-Disposition', `inline; filename="${receipt.filename}"`);
+        res.send(buf);
+    });
+    // Delete a specific receipt by its own ID
+    app.delete('/portal/api/expenses/:id/receipts/:rid', auth_1.authMiddleware, (req, res) => {
+        db.prepare('DELETE FROM expense_receipts WHERE id=? AND expense_id=?').run(req.params.rid, req.params.id);
         res.json({ ok: true });
     });
+    // Legacy: view first receipt (backward compat)
     app.get('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
-        const receipt = db.prepare('SELECT * FROM expense_receipts WHERE expense_id=?').get(req.params.id);
+        const receipt = db.prepare('SELECT * FROM expense_receipts WHERE expense_id=? ORDER BY uploaded_at ASC LIMIT 1').get(req.params.id);
         if (!receipt) {
             res.status(404).json({ error: 'No receipt' });
             return;
@@ -121,10 +145,6 @@ function register(app, db) {
         res.set('Content-Type', receipt.mime_type);
         res.set('Content-Disposition', `inline; filename="${receipt.filename}"`);
         res.send(buf);
-    });
-    app.delete('/portal/api/expenses/:id/receipt', auth_1.authMiddleware, (req, res) => {
-        db.prepare('DELETE FROM expense_receipts WHERE expense_id=?').run(req.params.id);
-        res.json({ ok: true });
     });
     // ── Inventory ─────────────────────────────────────────
     app.get('/portal/api/inventory', auth_1.authMiddleware, (req, res) => {

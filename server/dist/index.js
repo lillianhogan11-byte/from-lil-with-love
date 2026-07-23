@@ -26,7 +26,7 @@ app.use((0, cors_1.default)({
     ],
     credentials: true,
 }));
-app.use(express_1.default.json());
+app.use(express_1.default.json({ limit: '20mb' }));
 // Static files now served by nginx — not needed here
 // --- Database setup (Node.js built-in SQLite) ---
 const db = new node_sqlite_1.DatabaseSync(DB_PATH);
@@ -65,7 +65,7 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS expense_receipts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    expense_id INTEGER NOT NULL UNIQUE,
+    expense_id INTEGER NOT NULL,
     filename TEXT NOT NULL,
     mime_type TEXT NOT NULL,
     data TEXT NOT NULL,
