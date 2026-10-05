@@ -46,16 +46,34 @@ export default function MenuCard({ item }) {
 
       {/* Content */}
       <VStack align="start" spacing={2} p={4} pb={5}>
-        <Heading
-          as="h4"
-          fontFamily="'Playfair Display', serif"
-          fontSize="lg"
-          fontWeight="600"
-          color="#1A1A1A"
-          lineHeight="1.3"
-        >
-          {item.name}
-        </Heading>
+        <Flex w="full" align="baseline" justify="space-between" gap={3}>
+          <Heading
+            as="h4"
+            fontFamily="'Playfair Display', serif"
+            fontSize="lg"
+            fontWeight="600"
+            color="#1A1A1A"
+            lineHeight="1.3"
+          >
+            {item.name}
+          </Heading>
+
+          {Number(item.price) > 0 && (
+            <Text
+              fontFamily="'Lato', sans-serif"
+              fontSize="md"
+              fontWeight="700"
+              color="#7C9A7E"
+              lineHeight="1.3"
+              whiteSpace="nowrap"
+              flexShrink={0}
+            >
+              {Number.isInteger(Number(item.price))
+                ? `$${Number(item.price)}`
+                : `$${Number(item.price).toFixed(2)}`}
+            </Text>
+          )}
+        </Flex>
 
         {(() => {
           const parts = (item.description || '').split(/\n+Suggested pairing:/i);
