@@ -112,7 +112,7 @@ export default function About() {
                 color="#444"
                 lineHeight="1.85"
               >
-                As Biscuit Bar grows, our goal is to donate a portion of every sale to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters right here in Johnson County. We believe the best businesses are rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
+                As Biscuit Bar grows, our goal is to donate a portion of every sale to local charities that help build communities and save lives — from food pantries and youth programs to animal shelters across central Indiana. We believe the best businesses are rooted in love. When you order a biscuit from us, you are feeding yourself and feeding your neighbors. Food made with intention nourishes more than just the body. It feeds the soul of a community.
               </Text>
             </VStack>
 
